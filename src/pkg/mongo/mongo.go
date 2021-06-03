@@ -1,17 +1,11 @@
 package mongo
 
 import (
+	"buriedPoint/src/constant"
 	"gopkg.in/mgo.v2"
 	"log"
-	"time"
 )
 
-const (
-	MongoDBHosts = "weichenhao.cn:27017"
-	AuthUserName = "admin"
-	AuthPassword = "123456"
-	MaxPoolSize  = 300
-)
 
 type Person struct {
 	Name      string
@@ -22,31 +16,36 @@ type Person struct {
 	Interests []string
 }
 
-func main() {
+var Mongo *mgo.Session
+
+func InitMongo() {
 	mongoDBDialInfo := &mgo.DialInfo{
-		Addrs:    []string{MongoDBHosts},
-		Timeout:  60 * time.Second,
-		Username: AuthUserName,
-		Password: AuthPassword,
+		Addrs:    []string{constant.MongoUrl},
+		Timeout:  constant.MongoTimeout,
+		Username: constant.MongoUsername,
+		Password: constant.MongoPassword,
 	}
 
-	mongo, err := mgo.DialWithInfo(mongoDBDialInfo)
+	//连接
+	Mongo, err := mgo.DialWithInfo(mongoDBDialInfo)
 	if err != nil {
-		log.Fatalf("CreateSession failed:%n", err)
+		log.Printf("CreateSession failed:%n", err)
 	}
 
-	mongo.SetPoolLimit(MaxPoolSize)
-	defer mongo.Close()
+	//连接池限制
+	Mongo.SetPoolLimit(constant.MongoMaxPoolSize)
+	defer Mongo.Close()
 
-	mongo.SetMode(mgo.Monotonic, true)
+	Mongo.SetMode(mgo.Monotonic, true)
 
-	err = createData(mongo, "go_test", "go_test")
+	//调用测试
+	err = createData()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
 
-func createData(mongo *mgo.Session, dbname string, tablename string) error {
+func createData() error {
 
 	persons := []Person{
 		Person{Name: "Tony", Phone: "123432", City: "Shanghai", Age: 33, IsMan: true, Interests: []string{"music", "tea", "collection"}},
@@ -61,8 +60,8 @@ func createData(mongo *mgo.Session, dbname string, tablename string) error {
 		Person{Name: "Bruce", Phone: "123432", City: "Shanghai", Age: 31, IsMan: true, Interests: []string{"film", "tea", "game", "shoping", "reading"}},
 	}
 
-	cloneMongo := mongo.Clone()
-	c := cloneMongo.DB(dbname).C(tablename)
+	cloneMongo := Mongo.Clone()
+	c := cloneMongo.DB( "go_test").C( "go_test")
 
 	for _, item := range persons {
 		err := c.Insert(&item)

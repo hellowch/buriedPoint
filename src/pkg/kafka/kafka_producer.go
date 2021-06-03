@@ -1,8 +1,10 @@
 package main
 
 import (
+	"buriedPoint/src/constant"
 	"fmt"
 	"github.com/Shopify/sarama"
+	"log"
 )
 
 //生产者
@@ -11,24 +13,24 @@ func main()  {
 }
 
 func producer_test()  {
-	fmt.Println("producer_test")
-	config := sarama.NewConfig()
-	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Partitioner = sarama.NewRandomPartitioner
-	config.Producer.Return.Successes = true
-	config.Producer.Return.Errors = true
-	config.Version = sarama.V2_7_0_0
+	log.Println("producer_test")
+	config := sarama.NewConfig()   //实例化个sarama的Config
+	config.Producer.RequiredAcks = sarama.WaitForAll   //消息机制，0 1 -1 性能递减，数据健壮性递增
+	config.Producer.Partitioner = sarama.NewRandomPartitioner  //随机分区器
+	config.Producer.Return.Successes = true  //是否开启消息发送成功后通知 successes channel
+	config.Producer.Return.Errors = true  //是否开启消息发送失败后通知 errors channel
+	config.Version = sarama.V2_7_0_0   //kafka版本
 
-	producer, err := sarama.NewAsyncProducer([]string{"weichenhao.cn:9092"}, config)
+	producer, err := sarama.NewAsyncProducer([]string{constant.KafKaUrl}, config)
 	if err != nil {
-		fmt.Println("producer_test create producer error :", err.Error())
+		log.Println("producer_test create producer error :", err.Error())
 		return
 	}
 
 	defer producer.AsyncClose()
 	
 	msg := &sarama.ProducerMessage{
-		Topic: "kafka_go_test",
+		Topic: constant.KafkaTopic,
 		Key: sarama.StringEncoder("go_test"),
 	}
 	
@@ -41,9 +43,9 @@ func producer_test()  {
 
 		select {
 		case suc := <-producer.Successes():
-			fmt.Printf("offset: %d,  timestamp: %s", suc.Offset, suc.Timestamp.String())
+			log.Printf("offset: %d,  timestamp: %s", suc.Offset, suc.Timestamp.String())
 		case fail := <-producer.Errors():
-			fmt.Printf("err: %s\n", fail.Err.Error())
+			log.Printf("err: %s\n", fail.Err.Error())
 		}
 	}
 

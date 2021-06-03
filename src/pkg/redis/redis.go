@@ -1,14 +1,17 @@
 package redis
 
-import "github.com/go-redis/redis"
+import (
+	"buriedPoint/src/constant"
+	"github.com/go-redis/redis"
+)
 
 var RedisConn *redis.ClusterClient
 
-func init()  {
+func InitRedis()  {
 	RedisConn = redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs:        []string{"weichenhao.cn:6380"},
-		Password:     "",
-		PoolSize:     100,
-		MinIdleConns: 50,
+		Addrs:        []string{constant.RedisUrl},
+		Password:     constant.RedisPassword,
+		PoolSize:     constant.RedisPoolSize,
+		MinIdleConns: constant.RedisMinIdLeConns,
 	})
 }
