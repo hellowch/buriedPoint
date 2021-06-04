@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"buriedPoint/src/constant"
+	"fmt"
 	"gopkg.in/mgo.v2"
 	"log"
 )
@@ -73,3 +74,16 @@ func createData() error {
 	return nil
 }
 
+func findData(mongo *mgo.Session, dbname string, tablename string) error {
+	persons := []Person{}
+	c := mongo.DB(dbname).C(tablename)
+	err := c.Find(nil).All(&persons)
+	if err != nil {
+		return err
+	}
+	//fmt.Println(persons)
+	for i,v := range persons {
+		fmt.Println(i,"::",v.Name)
+	}
+	return nil
+}

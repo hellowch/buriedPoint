@@ -10,7 +10,7 @@ const (
 
 	MongoUrl = Url + "27017"
 	MongoTimeout = 60 * time.Second
-	MongoUsername = "admin"
+	MongoUsername = "root"
 	MongoPassword = "123456"
 	MongoMaxPoolSize = 300
 
