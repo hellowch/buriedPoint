@@ -14,7 +14,7 @@ const (
 	MongoPassword = "123456"
 	MongoMaxPoolSize = 300
 
-	MysqlUrl = "root:123456@tcp(" + Url + "3310" + ")/chargeMs?charset=utf8mb4&parseTime=True&loc=Local"
+	MysqlUrl = "root:123456@tcp(" + Url + "3310" + ")/buried_point?charset=utf8mb4&parseTime=True&loc=Local"
 	MysqlMaxIdleConns = 10
 	MysqlMaxOpenConns = 100
 	MysqlConnMaxLifetime = time.Hour

@@ -1,8 +1,8 @@
 ## 埋点系统 （项目初始化中）
-
-
+    (1.埋点，2.log)
+    公司注册，用户注册时候的公司问题还未解决
 ### 项目介绍
-    技术栈： kafka mysql redis mongodb gin
+    技术栈： kafka mysql redis mongodb gin jwt
 
 ### 平台目录结构说明
 ```
