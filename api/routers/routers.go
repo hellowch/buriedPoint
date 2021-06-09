@@ -22,5 +22,9 @@ func InitRouter()  {
 	user.POST("/login",controller.UserLogin)
 	user.POST("/register",controller.UserRegister)
 
+	//buried_point
+	buried_point := Engine.Group("/buriedPoint")
+	buried_point.POST("/insert", controller.BuriedPointInsert)
+
 	Engine.Run(":3001")
 }
