@@ -2,8 +2,7 @@ package service
 
 import (
 	"buriedPoint/src/models/basic_fields"
-	mysql2 "buriedPoint/src/pkg/mysql"
-	"fmt"
+	"buriedPoint/src/models/mysql"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -19,27 +18,27 @@ func CompanyRegister(ctx *gin.Context) (result basic_fields.Result) {
 	}
 	company.CreateTime = time.Now()
 	company.UpdateTime = time.Now()
-	tx := mysql2.Db.Exec("INSERT INTO company(company_name,create_time,update_time) VALUES (?,?,?);",company.CompanyName,company.CreateTime,company.UpdateTime)
-	if tx.Error != nil {
-		result.Code = http.StatusInternalServerError
+	saveRes, err := mysql.CompanyRegisterSql(ctx, &company)
+	if !saveRes {
+		result.Code = -100
 		result.Message = "错误"
-		result.Data = tx.Error
+		result.Data = err
 		return result
 	}
 	result.Code = http.StatusOK
 	result.Message = "插入成功"
-	result.Data = tx.RowsAffected
+	result.Data = saveRes
 	return result
 }
 
 func CompanySelect(ctx *gin.Context) (result basic_fields.Result) {
 	company := []basic_fields.Company{}
 	companyLike := ctx.DefaultQuery("company_name", "nil")
-	tx := mysql2.Db.Debug().Where(fmt.Sprintf("company_name LIKE %q",("%"+companyLike+"%"))).Find(&company)
-	if tx.Error != nil {
-		result.Code = http.StatusInternalServerError
+	saveRes, err := mysql.CompanySelectSql(ctx, companyLike, &company)
+	if !saveRes {
+		result.Code = -100
 		result.Message = "错误"
-		result.Data = tx.Error
+		result.Data = err
 		return result
 	}
 	result.Code = http.StatusOK
