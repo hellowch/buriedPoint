@@ -12,6 +12,11 @@ func InitRouter()  {
 	Engine := gin.Default()
 	Engine.Use(middleware.RequestInfos(),middleware.Cors())
 
+	//company
+	company := Engine.Group("/company")
+	company.POST("/register", controller.CompanyRegister)
+	company.GET("/select", controller.CompanySelect)
+
 	//user 路由组
 	user := Engine.Group("/user")
 	user.POST("/login",controller.UserLogin)

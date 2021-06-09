@@ -9,9 +9,8 @@ import (
 	"time"
 )
 
-var result basic_fields.Result
 
-func UserLogin(ctx *gin.Context) basic_fields.Result {
+func UserLogin(ctx *gin.Context) (result basic_fields.Result) {
 	out := map[string]interface{}{}
 	user := basic_fields.User{}
 	user.Username = ctx.PostForm("username")
@@ -38,7 +37,7 @@ func UserLogin(ctx *gin.Context) basic_fields.Result {
 	return result
 }
 
-func UserRegister(ctx *gin.Context) basic_fields.Result {
+func UserRegister(ctx *gin.Context) (result basic_fields.Result) {
 	user := basic_fields.User{}
 	err := ctx.ShouldBind(&user)
 	if err != nil {
@@ -57,7 +56,7 @@ func UserRegister(ctx *gin.Context) basic_fields.Result {
 	tx := mysql2.Db.Exec("INSERT INTO user(name,username,password,phone_number,role_id,company_id,avatar,email,create_time,update_time) VALUES (?,?,?,?,?,?,?,?,?,?);",
 		user.Name,user.Username,user.Password,user.PhoneNumber,user.RoleId,user.CompanyId,user.Avatar,user.Email,user.CreateTime,user.UpdateTime)
 	if tx.Error != nil {
-		result.Code = http.StatusBadRequest
+		result.Code = http.StatusInternalServerError
 		result.Message = "错误"
 		result.Data = tx.Error
 		return result

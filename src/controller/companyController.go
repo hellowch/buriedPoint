@@ -8,14 +8,14 @@ import (
 )
 
 
-func UserLogin(ctx *gin.Context)  {
+func CompanyRegister(ctx *gin.Context)  {
 	result := basic_fields.Result{}
-	result = service.UserLogin(ctx)
+	result = service.CompanyRegister(ctx)
 	ctx.JSON(http.StatusOK, result)
 }
 
-func UserRegister(ctx *gin.Context)  {
+func CompanySelect(ctx *gin.Context)  {
 	result := basic_fields.Result{}
-	result = service.UserRegister(ctx)
+	result = service.CompanySelect(ctx)
 	ctx.JSON(http.StatusOK, result)
 }
