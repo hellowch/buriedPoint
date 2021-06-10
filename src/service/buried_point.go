@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func BuriedPointInsert(ctx *gin.Context) (result basic_fields.Result) {
+func BPInsertDeploy(ctx *gin.Context) (result basic_fields.Result) {
 	buriedPoint := basic_fields.BuriedPoint{}
 	err := ctx.ShouldBind(&buriedPoint)
 	if err != nil {
