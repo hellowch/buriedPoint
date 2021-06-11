@@ -25,6 +25,8 @@ func InitRouter()  {
 	//buried_point
 	buried_point := Engine.Group("/buriedPoint")
 	buried_point.POST("/insertDeploy", controller.BPInsertDeploy)
+	buried_point.GET("/selectDeploy", controller.BPSelectDeploy)
+	buried_point.GET("/deleteDeploy", controller.BPDeleteDeploy)
 
 	Engine.Run(":3001")
 }

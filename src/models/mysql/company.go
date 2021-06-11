@@ -16,7 +16,7 @@ func CompanyRegisterSql(ctx *gin.Context, company *basic_fields.Company) (bool,e
 }
 
 func CompanySelectSql(ctx *gin.Context, companyLike string, company *[]basic_fields.Company) (bool,error) {
-	tx := mysql2.Db.Debug().Where(fmt.Sprintf("company_name LIKE %q",("%"+companyLike+"%"))).Find(&company)
+	tx := mysql2.Db.Where(fmt.Sprintf("company_name LIKE %q",("%"+companyLike+"%"))).Find(&company)
 	if tx.Error != nil {
 		return false, tx.Error
 	}
