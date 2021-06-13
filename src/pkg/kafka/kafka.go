@@ -1,8 +1,7 @@
-package main
+package kafka
 
 import (
 	"buriedPoint/src/constant"
-	"fmt"
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
 	"log"
@@ -11,13 +10,35 @@ import (
 	"time"
 )
 
-//消费者组
-func main()  {
-	consumer_test01()
+var Producer sarama.AsyncProducer
+var Consumer *cluster.Consumer
+
+func InitKafka()  {
+	kafkaProducer()
+	kafkaConsumer()
 }
 
-func consumer_test01()  {
-	fmt.Println("consumer_test01")
+func kafkaProducer()  {
+	//生产者配置
+	config := sarama.NewConfig()   //实例化个sarama的Config
+	config.Producer.RequiredAcks = sarama.WaitForAll   //消息机制，0 1 -1 性能递减，数据健壮性递增
+	config.Producer.Partitioner = sarama.NewRandomPartitioner  //随机分区器
+	config.Producer.Return.Successes = true  //是否开启消息发送成功后通知 successes channel
+	config.Producer.Return.Errors = true  //是否开启消息发送失败后通知 errors channel
+	config.Version = sarama.V2_7_0_0   //kafka版本
+
+	var err error
+	//生产者连接
+	Producer, err = sarama.NewAsyncProducer([]string{constant.KafKaUrl}, config)
+	if err != nil {
+		log.Println("producer_test create producer error :", err.Error())
+		return
+	}
+
+	//defer Producer.AsyncClose()
+}
+
+func kafkaConsumer()  {
 	brokers := []string{constant.KafKaUrl}
 	topics := []string{constant.KafkaTopic}
 
@@ -64,5 +85,4 @@ func consumer_test01()  {
 			return
 		}
 	}
-
 }

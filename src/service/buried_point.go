@@ -2,6 +2,7 @@ package service
 
 import (
 	"buriedPoint/src/models/basic_fields"
+	"buriedPoint/src/models/kafka"
 	"buriedPoint/src/models/mongo"
 	"buriedPoint/src/models/mysql"
 	"github.com/gin-gonic/gin"
@@ -77,6 +78,7 @@ func BPDeleteDeploy(ctx *gin.Context) (result basic_fields.Result) {
 
 func BPInsertData(ctx *gin.Context) (result basic_fields.Result) {
 	_ = ctx.Request.ParseForm()
+	//获取输入的参数
 	dataMap := map[string]string{}
 	for k, v := range ctx.Request.PostForm {
 		dataMap[k] = v[0]
@@ -86,6 +88,9 @@ func BPInsertData(ctx *gin.Context) (result basic_fields.Result) {
 	delete(dataMap, "bp_field")
 	delete(dataMap, "company_id")
 
+	//kafka测试
+	kafka.KafkaProducer("dataMap")
+	//插入mongo
 	err := mongo.TestData(company_id,bp_field,dataMap)
 	if err != nil {
 		result.Code = http.StatusBadRequest
