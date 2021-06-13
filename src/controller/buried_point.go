@@ -30,7 +30,9 @@ func BPDeleteDeploy(ctx *gin.Context)  {
 
 //向埋点添加数据
 func BPInsertData(ctx *gin.Context)  {
-
+	result := basic_fields.Result{}
+	result = service.BPInsertData(ctx)
+	ctx.JSON(http.StatusOK, result)
 }
 
 //读取埋点数据
