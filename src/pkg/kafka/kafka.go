@@ -2,6 +2,8 @@ package kafka
 
 import (
 	"buriedPoint/src/constant"
+	"buriedPoint/src/models/mongo"
+	"encoding/json"
 	"github.com/Shopify/sarama"
 	cluster "github.com/bsm/sarama-cluster"
 	"log"
@@ -15,7 +17,7 @@ var Consumer *cluster.Consumer
 
 func InitKafka()  {
 	kafkaProducer()
-	kafkaConsumer()
+	go kafkaConsumer()
 }
 
 func kafkaProducer()  {
@@ -48,26 +50,27 @@ func kafkaConsumer()  {
 	config.Consumer.Offsets.Initial=sarama.OffsetNewest
 	config.Group.Return.Notifications = true
 
+	var err error
 	//第二个参数是groupId
-	consumer, err := cluster.NewConsumer(brokers, "consumer-group1", topics, config)
+	Consumer, err = cluster.NewConsumer(brokers, "consumer-group1", topics, config)
 	if err != nil {
 		panic(err)
 	}
-	defer consumer.Close()
+	defer Consumer.Close()
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
 
 	// 接收错误
 	go func() {
-		for err := range consumer.Errors() {
+		for err := range Consumer.Errors() {
 			log.Printf("Error: %s\n", err.Error())
 		}
 	}()
 
 	// 打印一些rebalance的信息
 	go func() {
-		for ntf := range consumer.Notifications() {
+		for ntf := range Consumer.Notifications() {
 			log.Printf("Rebalanced: %+v\n", ntf)
 		}
 	}()
@@ -75,14 +78,32 @@ func kafkaConsumer()  {
 	// 消费消息
 	for {
 		select {
-		case msg, ok := <-consumer.Messages():
+		case msg, ok := <-Consumer.Messages():
 			if ok {
-				log.Printf("msg offset: %d, partition: %d, timestamp: %s, value: %s\n",
+				log.Printf("Consumer msg offset: %d, partition: %d, timestamp: %s, value: %s\n",
 					msg.Offset, msg.Partition, msg.Timestamp.String(), string(msg.Value))
-				consumer.MarkOffset(msg, "")   // 提交offset
+				BPInsertMongoData(msg.Value)
+				Consumer.MarkOffset(msg, "")   // 提交offset
 			}
 		case <-signals:
 			return
 		}
+	}
+}
+
+//向读取kafka埋点数据，写入mongo
+func BPInsertMongoData(value []byte) {
+	dataMap := make(map[string]string)
+	//json转map
+	err := json.Unmarshal(value, &dataMap)
+	if err != nil {
+		log.Println("Umarshal failed:", err)
+		return
+	}
+	//写入mongo
+	err = mongo.InsertMongo(dataMap)
+	if err != nil {
+		log.Println("mongo failed:", err)
+		return
 	}
 }

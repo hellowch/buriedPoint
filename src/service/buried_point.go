@@ -3,7 +3,6 @@ package service
 import (
 	"buriedPoint/src/models/basic_fields"
 	"buriedPoint/src/models/kafka"
-	"buriedPoint/src/models/mongo"
 	"buriedPoint/src/models/mysql"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -76,27 +75,16 @@ func BPDeleteDeploy(ctx *gin.Context) (result basic_fields.Result) {
 	return result
 }
 
-func BPInsertData(ctx *gin.Context) (result basic_fields.Result) {
+//将数据写入kafka
+func BPInsertKafkaData(ctx *gin.Context) (result basic_fields.Result) {
 	_ = ctx.Request.ParseForm()
 	//获取输入的参数
 	dataMap := map[string]string{}
 	for k, v := range ctx.Request.PostForm {
 		dataMap[k] = v[0]
 	}
-	bp_field := dataMap["bp_field"]
-	company_id := dataMap["company_id"]
-	delete(dataMap, "bp_field")
-	delete(dataMap, "company_id")
-
-	//kafka测试
-	kafka.KafkaProducer("dataMap")
-	//插入mongo
-	err := mongo.TestData(company_id,bp_field,dataMap)
-	if err != nil {
-		result.Code = http.StatusBadRequest
-		result.Message = "插入失败"
-		result.Data = dataMap
-	}
+	//写入kafka
+	kafka.KafkaProducer(dataMap)
 
 	result.Code = http.StatusOK
 	result.Message = "插入成功"
@@ -104,5 +92,21 @@ func BPInsertData(ctx *gin.Context) (result basic_fields.Result) {
 	return result
 }
 
-
+//从kafka获取数据写入mongo
+//func BPInsertMongoData(value []byte) {
+//	dataMap := make(map[string]string)
+//	//json转map
+//	err := json.Unmarshal(value, &dataMap)
+//	if err != nil {
+//		fmt.Println("Umarshal failed:", err)
+//		return
+//	}
+//	//写入mongo
+//	err = mongo.InsertMongo(dataMap)
+//	if err != nil {
+//		fmt.Println("mongo failed:", err)
+//		return
+//	}
+//	fmt.Println(dataMap)
+//}
 

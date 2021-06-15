@@ -28,12 +28,17 @@ func BPDeleteDeploy(ctx *gin.Context)  {
 	ctx.JSON(http.StatusOK, result)
 }
 
-//向埋点添加数据
-func BPInsertData(ctx *gin.Context)  {
+//向kafka添加埋点数据
+func BPInsertKafkaData(ctx *gin.Context)  {
 	result := basic_fields.Result{}
-	result = service.BPInsertData(ctx)
+	result = service.BPInsertKafkaData(ctx)
 	ctx.JSON(http.StatusOK, result)
 }
+
+//向读取kafka埋点数据，写入mongo
+//func BPInsertMongoData(value []byte)  {
+//	service.BPInsertMongoData(value)
+//}
 
 //读取埋点数据
 func BPSelectData(ctx *gin.Context)  {

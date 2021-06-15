@@ -6,7 +6,11 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-func TestData(dbname string, tablename string, dataMap interface{}) error {
+func InsertMongo(dataMap map[string]string) error {
+	dbname := dataMap["company_id"]
+	tablename := dataMap["bp_field"]
+	delete(dataMap, "company_id")
+	delete(dataMap, "bp_field")
 	c := mongoPkg.Mongo.DB(dbname).C(tablename)
 	err := c.Insert(dataMap)
 	return err

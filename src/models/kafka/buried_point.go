@@ -3,40 +3,46 @@ package kafka
 import (
 	"buriedPoint/src/constant"
 	kafkaPkg "buriedPoint/src/pkg/kafka"
+	"encoding/json"
 	"github.com/Shopify/sarama"
 	"log"
+	"time"
 )
 
-func KafkaProducer(value string)  {
+func KafkaProducer(value map[string]string)  {
 	msg := &sarama.ProducerMessage{
 		Topic: constant.KafkaTopic,
 		Key: sarama.StringEncoder("go_test"),
 	}
+	//将map转成json
+	value["time"] = time.Now().Format("2006-01-02 15:04:05")
 
-	msg.Value = sarama.ByteEncoder(value)
+	mjson, _ := json.Marshal(value)
+	msg.Value = sarama.ByteEncoder(mjson)
 
 	kafkaPkg.Producer.Input() <- msg
 
 	select {
 	case suc := <-kafkaPkg.Producer.Successes():
-		log.Printf("offset: %d,  timestamp: %s, value: %s", suc.Offset, suc.Timestamp.String(), suc.Value)
+		log.Printf("Producer offset: %d,  timestamp: %s, value: %s", suc.Offset, suc.Timestamp.String(), suc.Value)
 	case fail := <-kafkaPkg.Producer.Errors():
 		log.Printf("err: %s\n", fail.Err.Error())
 	}
 }
 
-func KafkaConsumer()  {
-	// 消费消息
-	for {
-		select {
-		case msg, ok := <-kafkaPkg.Consumer.Messages():
-			if ok {
-				log.Printf("msg offset: %d, partition: %d, timestamp: %s, value: %s\n",
-					msg.Offset, msg.Partition, msg.Timestamp.String(), string(msg.Value))
-				kafkaPkg.Consumer.MarkOffset(msg, "")   // 提交offset
-			}
-		//case <-signals:
-		//	return
-		}
-	}
-}
+//向读取kafka埋点数据，写入mongo
+//func BPInsertMongoData(value []byte) {
+//	dataMap := make(map[string]string)
+//	//json转map
+//	err := json.Unmarshal(value, &dataMap)
+//	if err != nil {
+//		log.Println("Umarshal failed:", err)
+//		return
+//	}
+//	//写入mongo
+//	err = mongo.InsertMongo(dataMap)
+//	if err != nil {
+//		log.Println("mongo failed:", err)
+//		return
+//	}
+//}
