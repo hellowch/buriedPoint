@@ -1,6 +1,7 @@
 ## 埋点系统 （项目初始化中）
     (1.埋点，2.log)
-    公司注册，用户注册时候的公司问题还未解决
+    目前可以做到数据写入kafka，然后自动读取kafka，根据公司id和
+    埋点字段写入对应mongo，还没有解决分topic问题
 ### 项目介绍
     技术栈： kafka mysql redis mongodb gin jwt
 
