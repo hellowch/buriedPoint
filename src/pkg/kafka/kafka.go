@@ -14,10 +14,12 @@ import (
 
 var Producer sarama.AsyncProducer
 var Consumer *cluster.Consumer
+var Topic []string
 
 func InitKafka()  {
 	kafkaProducer()
-	go kafkaConsumer()
+	kafkaConsumer()
+	go kafkaConsumerCluster()
 }
 
 func kafkaProducer()  {
@@ -33,16 +35,43 @@ func kafkaProducer()  {
 	//生产者连接
 	Producer, err = sarama.NewAsyncProducer([]string{constant.KafKaUrl}, config)
 	if err != nil {
-		log.Println("producer_test create producer error :", err.Error())
+		log.Println("kafkaProducer： 连接错误 :", err.Error())
 		return
 	}
 
 	//defer Producer.AsyncClose()
 }
 
+//主要用于获取topic等数据列表
 func kafkaConsumer()  {
+	config := sarama.NewConfig()
+	config.Producer.Return.Errors = true
+	config.Version = sarama.V2_7_0_0
 	brokers := []string{constant.KafKaUrl}
-	topics := []string{constant.KafkaTopic}
+	client, err := sarama.NewConsumer(brokers, config)
+	if err != nil {
+		log.Println("kafkaConsumer： 连接错误 :", err.Error())
+		return
+	}
+	//获取topic列表
+	var topicList []string
+	topicList, err = client.Topics()
+	if err != nil {
+		log.Println("topic获取错误")
+	}
+	//__consumer_offsets是用于保存消费者偏移量的
+	for i:=0;i<len(topicList);i++ {
+		if topicList[i] != "__consumer_offsets" {
+			Topic = append(Topic, topicList[i])
+		}
+	}
+	log.Println(Topic)
+	//defer consumer.Close()
+}
+
+func kafkaConsumerCluster()  {
+	brokers := []string{constant.KafKaUrl}
+	//topics := []string{constant.KafkaTopic}
 
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
@@ -52,7 +81,7 @@ func kafkaConsumer()  {
 
 	var err error
 	//第二个参数是groupId
-	Consumer, err = cluster.NewConsumer(brokers, "consumer-group1", topics, config)
+	Consumer, err = cluster.NewConsumer(brokers, "consumer-group1", Topic, config)
 	if err != nil {
 		panic(err)
 	}
@@ -63,7 +92,7 @@ func kafkaConsumer()  {
 
 	// 接收错误
 	go func() {
-		for err := range Consumer.Errors() {
+		for err = range Consumer.Errors() {
 			log.Printf("Error: %s\n", err.Error())
 		}
 	}()
@@ -80,7 +109,7 @@ func kafkaConsumer()  {
 		select {
 		case msg, ok := <-Consumer.Messages():
 			if ok {
-				log.Printf("Consumer msg offset: %d, partition: %d, timestamp: %s, value: %s\n",
+				log.Printf("kafkaConsumerCluster： msg offset: %d, partition: %d, timestamp: %s, value: %s\n",
 					msg.Offset, msg.Partition, msg.Timestamp.String(), string(msg.Value))
 				BPInsertMongoData(msg.Value)
 				Consumer.MarkOffset(msg, "")   // 提交offset
@@ -97,13 +126,13 @@ func BPInsertMongoData(value []byte) {
 	//json转map
 	err := json.Unmarshal(value, &dataMap)
 	if err != nil {
-		log.Println("Umarshal failed:", err)
+		log.Println("BPInsertMongoData：json转map失败:", err)
 		return
 	}
 	//写入mongo
 	err = mongo.InsertMongo(dataMap)
 	if err != nil {
-		log.Println("mongo failed:", err)
+		log.Println("BPInsertMongoData：写入mongo失败:", err)
 		return
 	}
 }

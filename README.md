@@ -1,7 +1,6 @@
 ## 埋点系统 （项目初始化中）
     (1.埋点，2.log)
-    目前可以做到数据写入kafka，然后自动读取kafka，根据公司id和
-    埋点字段写入对应mongo，还没有解决分topic问题
+    完成根据字段写入不同topic，还未解决：每次有新topic后应刷新本地topic列表
 ### 项目介绍
     技术栈： kafka mysql redis mongodb gin jwt
 

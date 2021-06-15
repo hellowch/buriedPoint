@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"buriedPoint/src/constant"
 	kafkaPkg "buriedPoint/src/pkg/kafka"
 	"encoding/json"
 	"github.com/Shopify/sarama"
@@ -11,7 +10,7 @@ import (
 
 func KafkaProducer(value map[string]string)  {
 	msg := &sarama.ProducerMessage{
-		Topic: constant.KafkaTopic,
+		Topic: value["bp_field"],
 		Key: sarama.StringEncoder("go_test"),
 	}
 	//将map转成json
