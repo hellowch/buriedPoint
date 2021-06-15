@@ -18,8 +18,18 @@ var Topic []string
 
 func InitKafka()  {
 	kafkaProducer()
-	kafkaConsumer()
-	go kafkaConsumerCluster()
+	go func() {
+		for {
+			kafkaConsumer()
+			time.Sleep(time.Second*5)
+		}
+	}()
+	go func() {
+		for {
+			go kafkaConsumerCluster()
+			time.Sleep(time.Second*5)
+		}
+	}()
 }
 
 func kafkaProducer()  {
@@ -53,6 +63,7 @@ func kafkaConsumer()  {
 		log.Println("kafkaConsumer： 连接错误 :", err.Error())
 		return
 	}
+
 	//获取topic列表
 	var topicList []string
 	topicList, err = client.Topics()
@@ -60,13 +71,14 @@ func kafkaConsumer()  {
 		log.Println("topic获取错误")
 	}
 	//__consumer_offsets是用于保存消费者偏移量的
+	Topic = []string{}
 	for i:=0;i<len(topicList);i++ {
 		if topicList[i] != "__consumer_offsets" {
 			Topic = append(Topic, topicList[i])
 		}
 	}
-	log.Println(Topic)
-	//defer consumer.Close()
+	//log.Println(Topic)
+	err = client.Close()
 }
 
 func kafkaConsumerCluster()  {
@@ -81,6 +93,7 @@ func kafkaConsumerCluster()  {
 
 	var err error
 	//第二个参数是groupId
+	log.Println(Topic)
 	Consumer, err = cluster.NewConsumer(brokers, "consumer-group1", Topic, config)
 	if err != nil {
 		panic(err)

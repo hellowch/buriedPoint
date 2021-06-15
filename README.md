@@ -1,6 +1,6 @@
 ## 埋点系统 （项目初始化中）
     (1.埋点，2.log)
-    完成根据字段写入不同topic，还未解决：每次有新topic后应刷新本地topic列表
+    完成根据字段写入不同topic，并自动获取写入mongo完成，感觉这段逻辑有点怪，可以优化下
 ### 项目介绍
     技术栈： kafka mysql redis mongodb gin jwt
 
